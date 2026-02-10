@@ -57,7 +57,10 @@ class GoogleAuthClient {
   }) {
     return _googleSignIn.signInButton(
       config: GSIAPButtonConfig(
-        onSignIn: (_) => onSignedIn(),
+        onSignIn: (credentials) {
+          _credentials = credentials;
+          onSignedIn();
+        },
         uiConfig: uiConfig,
       ),
     );
