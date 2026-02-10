@@ -14,7 +14,11 @@ class GoogleAuthClient {
       params: GoogleSignInParams(
         clientId: AuthConfig.googleClientIdForPlatform(),
         clientSecret: AuthConfig.googleClientSecretForPlatform(),
-        scopes: const ['https://www.googleapis.com/auth/calendar.readonly'],
+        scopes: const [
+          'https://www.googleapis.com/auth/calendar.readonly',
+          'https://www.googleapis.com/auth/userinfo.profile',
+          'https://www.googleapis.com/auth/userinfo.email',
+        ],
       ),
     );
     _googleSignIn.authenticationState.listen((credentials) {
@@ -27,6 +31,7 @@ class GoogleAuthClient {
   String? _nextSyncToken;
 
   bool get isSignedIn => _credentials != null;
+  String? get accessToken => _credentials?.accessToken;
   Stream<GoogleSignInCredentials?> get authenticationState =>
       _googleSignIn.authenticationState;
 
