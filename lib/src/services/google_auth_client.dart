@@ -124,7 +124,13 @@ class GoogleAuthClient {
           removed.add('g:$id');
         }
       } else {
-        upserts.add(Booking.fromGoogle(item));
+        final booking = Booking.fromGoogle(item);
+        if (booking.title.isEmpty &&
+            booking.description.isEmpty &&
+            booking.meetingLink.isEmpty) {
+          continue;
+        }
+        upserts.add(booking);
       }
     }
 

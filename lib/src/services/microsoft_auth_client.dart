@@ -157,7 +157,13 @@ class MicrosoftAuthClient {
           }
           continue;
         }
-        upserts.add(Booking.fromMicrosoft(item));
+        final booking = Booking.fromMicrosoft(item);
+        if (booking.title.isEmpty &&
+            booking.description.isEmpty &&
+            booking.meetingLink.isEmpty) {
+          continue;
+        }
+        upserts.add(booking);
       }
 
       nextLink = data['@odata.nextLink']?.toString();

@@ -61,8 +61,8 @@ class AuthConfig {
         return value;
       }
     } catch (_) {
-      // dotenv not initialized - fall back to compile-time environment
+      // dotenv not initialized - return empty string
     }
-    return const String.fromEnvironment(key);
+    return '';
   }
 }
