@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Authentication</title>
+</head>
+<body>
+  <p>Signing in...</p>
+  <script>
+    const url = window.location.href;
+    if (window.opener) {
+      window.opener.postMessage(url, window.location.origin);
+      window.close();
+    } else {
+      // Fallback: just display the auth code
+      document.body.innerHTML = '<p>Authentication complete. You can close this window.</p>';
+    }
+  </script>
+</body>
+</html>

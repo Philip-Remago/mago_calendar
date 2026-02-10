@@ -55,10 +55,14 @@ class AuthConfig {
   }
 
   static String _read(String key) {
-    final value = dotenv.env[key];
-    if (value != null && value.isNotEmpty) {
-      return value;
+    try {
+      final value = dotenv.env[key];
+      if (value != null && value.isNotEmpty) {
+        return value;
+      }
+    } catch (_) {
+      // dotenv not initialized - fall back to compile-time environment
     }
-    return const String.fromEnvironment('');
+    return const String.fromEnvironment(key);
   }
 }

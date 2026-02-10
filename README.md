@@ -35,6 +35,29 @@ A Flutter package for integrating Google and Microsoft calendar OAuth and bookin
        - .env
    ```
 
+4. **For Web**: Copy the `auth.html` callback page to your `web/` folder:
+   ```bash
+   # From your Flutter project root:
+   cp .pub-cache/git/mago_calendar-*/assets/web/auth.html web/auth.html
+   ```
+   Or manually create `web/auth.html` with this content:
+   ```html
+   <!DOCTYPE html>
+   <html>
+   <head><meta charset="UTF-8"><title>Authentication</title></head>
+   <body>
+     <p>Signing in...</p>
+     <script>
+       const url = window.location.href;
+       if (window.opener) {
+         window.opener.postMessage(url, window.location.origin);
+         window.close();
+       }
+     </script>
+   </body>
+   </html>
+   ```
+
 ## Usage
 
 ### Initialize the environment

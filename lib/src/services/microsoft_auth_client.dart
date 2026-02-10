@@ -64,8 +64,9 @@ class MicrosoftAuthClient {
       url: uri.toString(),
       callbackUrlScheme: AuthConfig.microsoftCallbackScheme(),
       options: FlutterWebAuth2Options(
-        windowName: 'flutter-web-auth-2',
+        windowName: 'Microsoft Sign In',
         debugOrigin: Uri.base.origin,
+        preferEphemeral: true,
       ),
     );
 
