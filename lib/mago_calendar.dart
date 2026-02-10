@@ -14,6 +14,16 @@ export 'src/models/sync_result.dart';
 export 'src/services/google_auth_client.dart';
 export 'src/services/microsoft_auth_client.dart';
 
+export 'package:google_sign_in_all_platforms/google_sign_in_all_platforms.dart'
+    show
+        GSIAPButtonUiConfig,
+        GSIAPButtonType,
+        GSIAPButtonTheme,
+        GSIAPButtonSize,
+        GSIAPButtonText,
+        GSIAPButtonShape,
+        GSIAPButtonLogoAlignment;
+
 // UI
 export 'src/ui/calendar_home_page.dart';
 export 'src/ui/widgets/action_card.dart';

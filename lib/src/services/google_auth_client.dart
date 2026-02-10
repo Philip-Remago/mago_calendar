@@ -51,9 +51,15 @@ class GoogleAuthClient {
     _nextSyncToken = null;
   }
 
-  Widget? signInButton({required VoidCallback onSignedIn}) {
+  Widget? signInButton({
+    required VoidCallback onSignedIn,
+    GSIAPButtonUiConfig? uiConfig,
+  }) {
     return _googleSignIn.signInButton(
-      config: GSIAPButtonConfig(onSignIn: (_) => onSignedIn()),
+      config: GSIAPButtonConfig(
+        onSignIn: (_) => onSignedIn(),
+        uiConfig: uiConfig,
+      ),
     );
   }
 
