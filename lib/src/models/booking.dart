@@ -142,15 +142,20 @@ class Booking {
         .replaceAll('&quot;', '"');
 
     final patterns = <RegExp>[
+      RegExp(r'https://teams\.microsoft\.com/meet/[^\s<>"]+'),
       RegExp(r'https://teams\.microsoft\.com/l/meetup-join/[^\s<>"]+'),
       RegExp(r'https://teams\.live\.com/meet/[^\s<>"]+'),
+      RegExp(r'href="(https://teams\.microsoft\.com/meet/[^"]+)"'),
       RegExp(r'href="(https://teams\.microsoft\.com/l/meetup-join/[^"]+)"'),
 
+      // Zoom patterns
       RegExp(r'https://[a-z0-9]+\.zoom\.us/j/[^\s<>"]+'),
       RegExp(r'https://zoom\.us/j/[^\s<>"]+'),
 
+      // Google Meet patterns
       RegExp(r'https://meet\.google\.com/[a-z]{3}-[a-z]{4}-[a-z]{3}'),
 
+      // Webex patterns
       RegExp(r'https://[a-z0-9]+\.webex\.com/[^\s<>"]+'),
     ];
 
