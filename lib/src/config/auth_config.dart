@@ -55,6 +55,29 @@ class AuthConfig {
   }
 
   static String _read(String key) {
+    const defines = <String, String>{
+      'MICROSOFT_CLIENT_ID': String.fromEnvironment('MICROSOFT_CLIENT_ID'),
+      'MICROSOFT_CLIENT_SECRET': String.fromEnvironment(
+        'MICROSOFT_CLIENT_SECRET',
+      ),
+      'GOOGLE_WEB_CLIENT_ID': String.fromEnvironment('GOOGLE_WEB_CLIENT_ID'),
+      'GOOGLE_ANDROID_CLIENT_ID': String.fromEnvironment(
+        'GOOGLE_ANDROID_CLIENT_ID',
+      ),
+      'GOOGLE_WINDOWS_CLIENT_ID': String.fromEnvironment(
+        'GOOGLE_WINDOWS_CLIENT_ID',
+      ),
+      'GOOGLE_WINDOWS_CLIENT_SECRET': String.fromEnvironment(
+        'GOOGLE_WINDOWS_CLIENT_SECRET',
+      ),
+    };
+
+    final defined = defines[key];
+    if (defined != null && defined.isNotEmpty) {
+      return defined;
+    }
+
+    // 2. Fallback to dotenv (local development)
     try {
       final value = dotenv.env[key];
       if (value != null && value.isNotEmpty) {
