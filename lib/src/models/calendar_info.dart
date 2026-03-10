@@ -39,6 +39,14 @@ class CalendarInfo {
   }
 
   @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CalendarInfo && id == other.id && source == other.source;
+
+  @override
+  int get hashCode => id.hashCode ^ source.hashCode;
+
+  @override
   String toString() =>
       'CalendarInfo(id: $id, name: $name, primary: $isPrimary)';
 }
