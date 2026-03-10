@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/auth_config.dart';
 import '../models/booking.dart';
+import '../models/calendar_info.dart';
 import '../models/sync_result.dart';
 
 class GoogleAuthClient {
@@ -66,15 +67,48 @@ class GoogleAuthClient {
     );
   }
 
+  Future<List<CalendarInfo>> fetchCalendars() async {
+    if (_credentials == null) {
+      throw StateError('Google not signed in.');
+    }
+
+    final uri = Uri.https(
+      'www.googleapis.com',
+      '/calendar/v3/users/me/calendarList',
+    );
+
+    final response = await http.get(
+      uri,
+      headers: {'Authorization': 'Bearer ${_credentials!.accessToken}'},
+    );
+
+    if (response.statusCode != 200) {
+      throw StateError('Google API error: ${response.statusCode}');
+    }
+
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    final items = (data['items'] as List<dynamic>? ?? [])
+        .whereType<Map<String, dynamic>>()
+        .toList();
+
+    return items.map((e) => CalendarInfo.fromGoogle(e)).toList();
+  }
+
   Future<List<Booking>> fetchBookings({
     required DateTime start,
     required DateTime end,
+    String? calendarId,
   }) async {
     if (_credentials == null) {
       throw StateError('Google not signed in.');
     }
 
-    final result = await fetchChanges(start: start, end: end, forceFull: true);
+    final result = await fetchChanges(
+      start: start,
+      end: end,
+      forceFull: true,
+      calendarId: calendarId,
+    );
     return result.upserts;
   }
 
@@ -86,6 +120,7 @@ class GoogleAuthClient {
     required DateTime start,
     required DateTime end,
     bool forceFull = false,
+    String? calendarId,
   }) async {
     if (_credentials == null) {
       throw StateError('Google not signed in.');
@@ -104,9 +139,11 @@ class GoogleAuthClient {
       params['syncToken'] = _nextSyncToken!;
     }
 
+    final calId = calendarId ?? 'primary';
+
     final uri = Uri.https(
       'www.googleapis.com',
-      '/calendar/v3/calendars/primary/events',
+      '/calendar/v3/calendars/$calId/events',
       params,
     );
 

@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/auth_config.dart';
 import '../models/booking.dart';
+import '../models/calendar_info.dart';
 import '../models/oauth_token.dart';
 import '../models/sync_result.dart';
 
@@ -90,11 +91,45 @@ class MicrosoftAuthClient {
     _clearStoredToken();
   }
 
+  Future<List<CalendarInfo>> fetchCalendars() async {
+    final accessToken = await _getAccessToken();
+    if (accessToken == null) {
+      throw StateError('Microsoft not signed in.');
+    }
+
+    final uri = Uri.parse('https://graph.microsoft.com/v1.0/me/calendars')
+        .replace(
+          queryParameters: {r'$select': 'id,name,isDefaultCalendar,hexColor'},
+        );
+
+    final response = await http.get(
+      uri,
+      headers: {'Authorization': 'Bearer $accessToken'},
+    );
+
+    if (response.statusCode != 200) {
+      throw StateError('Microsoft Graph error: ${response.statusCode}');
+    }
+
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    final items = (data['value'] as List<dynamic>? ?? [])
+        .whereType<Map<String, dynamic>>()
+        .toList();
+
+    return items.map((e) => CalendarInfo.fromMicrosoft(e)).toList();
+  }
+
   Future<List<Booking>> fetchBookings({
     required DateTime start,
     required DateTime end,
+    String? calendarId,
   }) async {
-    final result = await fetchChanges(start: start, end: end, forceFull: true);
+    final result = await fetchChanges(
+      start: start,
+      end: end,
+      forceFull: true,
+      calendarId: calendarId,
+    );
     return result.upserts;
   }
 
@@ -106,6 +141,7 @@ class MicrosoftAuthClient {
     required DateTime start,
     required DateTime end,
     bool forceFull = false,
+    String? calendarId,
   }) async {
     final accessToken = await _getAccessToken();
     if (accessToken == null) {
@@ -116,17 +152,19 @@ class MicrosoftAuthClient {
     if (!forceFull && _deltaLink != null) {
       requestUrl = _deltaLink;
     } else {
-      requestUrl =
-          Uri.parse('https://graph.microsoft.com/v1.0/me/calendarView/delta')
-              .replace(
-                queryParameters: {
-                  'startDateTime': start.toUtc().toIso8601String(),
-                  'endDateTime': end.toUtc().toIso8601String(),
-                  r'$select':
-                      'subject,bodyPreview,body,start,end,location,onlineMeetingUrl,organizer',
-                },
-              )
-              .toString();
+      final basePath = calendarId != null
+          ? 'https://graph.microsoft.com/v1.0/me/calendars/$calendarId/calendarView/delta'
+          : 'https://graph.microsoft.com/v1.0/me/calendarView/delta';
+      requestUrl = Uri.parse(basePath)
+          .replace(
+            queryParameters: {
+              'startDateTime': start.toUtc().toIso8601String(),
+              'endDateTime': end.toUtc().toIso8601String(),
+              r'$select':
+                  'subject,bodyPreview,body,start,end,location,onlineMeetingUrl,organizer',
+            },
+          )
+          .toString();
     }
 
     final upserts = <Booking>[];
