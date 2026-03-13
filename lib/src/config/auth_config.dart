@@ -55,7 +55,7 @@ class AuthConfig {
   }
 
   static String googleRedirectUri() {
-    return '${Uri.base.origin}/auth.html';
+    return Uri.base.origin;
   }
 
   static String googleCallbackScheme() {
