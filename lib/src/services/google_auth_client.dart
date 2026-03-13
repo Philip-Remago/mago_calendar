@@ -94,7 +94,8 @@ class GoogleAuthClient {
   }
 
   Future<List<CalendarInfo>> fetchCalendars() async {
-    if (_credentials == null) {
+    final token = accessToken;
+    if (token == null) {
       throw StateError('Google not signed in.');
     }
 
@@ -105,7 +106,7 @@ class GoogleAuthClient {
 
     final response = await http.get(
       uri,
-      headers: {'Authorization': 'Bearer ${_credentials!.accessToken}'},
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode != 200) {
@@ -125,7 +126,7 @@ class GoogleAuthClient {
     required DateTime end,
     String? calendarId,
   }) async {
-    if (_credentials == null) {
+    if (accessToken == null) {
       throw StateError('Google not signed in.');
     }
 
@@ -148,7 +149,8 @@ class GoogleAuthClient {
     bool forceFull = false,
     String? calendarId,
   }) async {
-    if (_credentials == null) {
+    final token = accessToken;
+    if (token == null) {
       throw StateError('Google not signed in.');
     }
 
@@ -175,7 +177,7 @@ class GoogleAuthClient {
 
     final response = await http.get(
       uri,
-      headers: {'Authorization': 'Bearer ${_credentials!.accessToken}'},
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 410) {
