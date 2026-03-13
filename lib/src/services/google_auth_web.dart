@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'package:web/web.dart' as web;
 
-/// Opens Google OAuth in a centered popup window and returns the access token.
-Future<String> signInWithGooglePopup(String authUrl) async {
+/// Opens a URL in a centered popup window and returns the full callback URL
+/// received via postMessage.
+Future<String> authPopup(String authUrl, {String windowName = 'auth'}) async {
   final screenW = web.window.screen.width;
   final screenH = web.window.screen.height;
   const popupW = 500;
@@ -14,12 +15,11 @@ Future<String> signInWithGooglePopup(String authUrl) async {
   final features =
       'width=$popupW,height=$popupH,left=$left,top=$top,toolbar=no,menubar=no,scrollbars=yes,resizable=yes';
 
-  final popup = web.window.open(authUrl, 'google_auth', features);
+  final popup = web.window.open(authUrl, windowName, features);
 
   final completer = Completer<String>();
   web.EventListener? listener;
 
-  // Listen for the postMessage from the popup
   listener = (web.Event event) {
     final msgEvent = event as web.MessageEvent;
 
@@ -31,13 +31,9 @@ Future<String> signInWithGooglePopup(String authUrl) async {
     final callbackUrl = data['flutter-web-auth-2'];
     if (callbackUrl is! String) return;
 
-    final uri = Uri.parse(callbackUrl);
-    final params = Uri.splitQueryString(uri.fragment);
-    final token = params['access_token'];
-
-    if (token != null && token.isNotEmpty) {
-      web.window.removeEventListener('message', listener);
-      completer.complete(token);
+    web.window.removeEventListener('message', listener);
+    if (!completer.isCompleted) {
+      completer.complete(callbackUrl);
     }
   }.toJS;
 
@@ -49,10 +45,29 @@ Future<String> signInWithGooglePopup(String authUrl) async {
       timer.cancel();
       web.window.removeEventListener('message', listener);
       if (!completer.isCompleted) {
-        completer.completeError(StateError('Google sign-in popup was closed'));
+        completer.completeError(StateError('Sign-in popup was closed'));
       }
     }
   });
 
   return completer.future;
+}
+
+/// Opens Google OAuth in a centered popup window and returns the access token.
+Future<String> signInWithGooglePopup(String authUrl) async {
+  final callbackUrl = await authPopup(authUrl, windowName: 'google_auth');
+  final uri = Uri.parse(callbackUrl);
+  final params = Uri.splitQueryString(uri.fragment);
+  final token = params['access_token'];
+
+  if (token != null && token.isNotEmpty) {
+    return token;
+  }
+  throw StateError('Google auth failed: no access token in response');
+}
+
+/// Opens Microsoft OAuth in a centered popup window and returns the full
+/// callback URL (containing the authorization code).
+Future<String> signInWithMicrosoftPopup(String authUrl) async {
+  return authPopup(authUrl, windowName: 'microsoft_auth');
 }

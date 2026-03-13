@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,6 +12,9 @@ import '../models/booking.dart';
 import '../models/calendar_info.dart';
 import '../models/oauth_token.dart';
 import '../models/sync_result.dart';
+import 'google_auth_stub.dart'
+    if (dart.library.html) 'google_auth_web.dart'
+    as web_auth;
 
 class MicrosoftAuthClient {
   static const _tenant = 'common';
@@ -61,15 +65,16 @@ class MicrosoftAuthClient {
       },
     );
 
-    final callbackUrl = await FlutterWebAuth2.authenticate(
-      url: uri.toString(),
-      callbackUrlScheme: AuthConfig.microsoftCallbackScheme(),
-      options: FlutterWebAuth2Options(
-        windowName: 'Microsoft Sign In',
-        debugOrigin: Uri.base.origin,
-        preferEphemeral: true,
-      ),
-    );
+    String callbackUrl;
+    if (kIsWeb) {
+      callbackUrl = await web_auth.signInWithMicrosoftPopup(uri.toString());
+    } else {
+      callbackUrl = await FlutterWebAuth2.authenticate(
+        url: uri.toString(),
+        callbackUrlScheme: AuthConfig.microsoftCallbackScheme(),
+        options: const FlutterWebAuth2Options(preferEphemeral: true),
+      );
+    }
 
     final returned = Uri.parse(callbackUrl);
     final returnedState = returned.queryParameters['state'];
