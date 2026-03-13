@@ -9,8 +9,8 @@ import '../config/auth_config.dart';
 import '../models/booking.dart';
 import '../models/calendar_info.dart';
 import '../models/sync_result.dart';
-import 'google_auth_stub.dart'
-    if (dart.library.html) 'google_auth_web.dart'
+import 'auth_popup_stub.dart'
+    if (dart.library.html) 'auth_popup_web.dart'
     as web_auth;
 
 class GoogleAuthClient {

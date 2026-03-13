@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'package:web/web.dart' as web;
 
-/// Opens a URL in a centered popup window and returns the full callback URL
-/// received via postMessage.
 Future<String> authPopup(String authUrl, {String windowName = 'auth'}) async {
   final screenW = web.window.screen.width;
   final screenH = web.window.screen.height;
@@ -39,7 +37,6 @@ Future<String> authPopup(String authUrl, {String windowName = 'auth'}) async {
 
   web.window.addEventListener('message', listener);
 
-  // Poll to detect if user closed the popup without completing auth
   Timer.periodic(const Duration(milliseconds: 500), (timer) {
     if (popup == null || popup.closed) {
       timer.cancel();
@@ -53,7 +50,6 @@ Future<String> authPopup(String authUrl, {String windowName = 'auth'}) async {
   return completer.future;
 }
 
-/// Opens Google OAuth in a centered popup window and returns the access token.
 Future<String> signInWithGooglePopup(String authUrl) async {
   final callbackUrl = await authPopup(authUrl, windowName: 'google_auth');
   final uri = Uri.parse(callbackUrl);
@@ -66,8 +62,6 @@ Future<String> signInWithGooglePopup(String authUrl) async {
   throw StateError('Google auth failed: no access token in response');
 }
 
-/// Opens Microsoft OAuth in a centered popup window and returns the full
-/// callback URL (containing the authorization code).
 Future<String> signInWithMicrosoftPopup(String authUrl) async {
   return authPopup(authUrl, windowName: 'microsoft_auth');
 }
