@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:google_sign_in_all_platforms/google_sign_in_all_platforms.dart';
 import 'package:http/http.dart' as http;
 
@@ -29,10 +30,17 @@ class GoogleAuthClient {
 
   late final GoogleSignIn _googleSignIn;
   GoogleSignInCredentials? _credentials;
+  String? _redirectAccessToken;
   String? _nextSyncToken;
 
-  bool get isSignedIn => _credentials != null;
-  String? get accessToken => _credentials?.accessToken;
+  static const _scopes = [
+    'https://www.googleapis.com/auth/calendar.readonly',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/userinfo.email',
+  ];
+
+  bool get isSignedIn => _credentials != null || _redirectAccessToken != null;
+  String? get accessToken => _credentials?.accessToken ?? _redirectAccessToken;
   Stream<GoogleSignInCredentials?> get authenticationState =>
       _googleSignIn.authenticationState;
 
@@ -43,12 +51,39 @@ class GoogleAuthClient {
   }
 
   Future<void> signIn() async {
-    _credentials = await _googleSignIn.signIn();
+    await _signInWithRedirect();
+  }
+
+  Future<void> _signInWithRedirect() async {
+    final redirectUri = AuthConfig.googleRedirectUri();
+    final authUrl = Uri.https('accounts.google.com', '/o/oauth2/v2/auth', {
+      'client_id': AuthConfig.googleClientIdForPlatform(),
+      'redirect_uri': redirectUri,
+      'response_type': 'token',
+      'scope': _scopes.join(' '),
+      'include_granted_scopes': 'true',
+    });
+
+    final result = await FlutterWebAuth2.authenticate(
+      url: authUrl.toString(),
+      callbackUrlScheme: AuthConfig.googleCallbackScheme(),
+    );
+
+    final uri = Uri.parse(result);
+    final params = Uri.splitQueryString(uri.fragment);
+    final token = params['access_token'];
+
+    if (token != null && token.isNotEmpty) {
+      _redirectAccessToken = token;
+    } else {
+      throw StateError('Google auth failed: no access token in response');
+    }
   }
 
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     _credentials = null;
+    _redirectAccessToken = null;
     _nextSyncToken = null;
   }
 

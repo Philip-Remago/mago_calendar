@@ -54,6 +54,14 @@ class AuthConfig {
     return 'com.calendar.connect';
   }
 
+  static String googleRedirectUri() {
+    return '${Uri.base.origin}/auth.html';
+  }
+
+  static String googleCallbackScheme() {
+    return Uri.base.scheme;
+  }
+
   static String _read(String key) {
     const defines = <String, String>{
       'MICROSOFT_CLIENT_ID': String.fromEnvironment('MICROSOFT_CLIENT_ID'),
