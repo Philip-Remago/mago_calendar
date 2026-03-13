@@ -1,7 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:google_sign_in_all_platforms/google_sign_in_all_platforms.dart';
 import 'package:http/http.dart' as http;
 
@@ -9,6 +9,9 @@ import '../config/auth_config.dart';
 import '../models/booking.dart';
 import '../models/calendar_info.dart';
 import '../models/sync_result.dart';
+import 'google_auth_stub.dart'
+    if (dart.library.html) 'google_auth_web.dart'
+    as web_auth;
 
 class GoogleAuthClient {
   GoogleAuthClient() {
@@ -64,20 +67,8 @@ class GoogleAuthClient {
       'include_granted_scopes': 'true',
     });
 
-    final result = await FlutterWebAuth2.authenticate(
-      url: authUrl.toString(),
-      callbackUrlScheme: AuthConfig.googleCallbackScheme(),
-    );
-
-    final uri = Uri.parse(result);
-    final params = Uri.splitQueryString(uri.fragment);
-    final token = params['access_token'];
-
-    if (token != null && token.isNotEmpty) {
-      _redirectAccessToken = token;
-    } else {
-      throw StateError('Google auth failed: no access token in response');
-    }
+    final token = await web_auth.signInWithGooglePopup(authUrl.toString());
+    _redirectAccessToken = token;
   }
 
   Future<void> signOut() async {

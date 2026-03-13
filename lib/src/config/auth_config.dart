@@ -58,10 +58,6 @@ class AuthConfig {
     return Uri.base.origin;
   }
 
-  static String googleCallbackScheme() {
-    return Uri.base.scheme;
-  }
-
   static String _read(String key) {
     const defines = <String, String>{
       'MICROSOFT_CLIENT_ID': String.fromEnvironment('MICROSOFT_CLIENT_ID'),
